@@ -23,11 +23,17 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 #  ║║║║ ║╠╦╝╠╩╗╚═╗╠═╝╠═╣║  ║╣ ╚═╗
 #  ╚╩╝╚═╝╩╚═╩ ╩╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
 
-# Default 1 monitor with 6 workspaces
-for monitor in $(xrandr -q | grep -w 'connected' | cut -d' ' -f1); do
-    bspc monitor "$monitor" -d '1' '2' '3' '4' '5' '6'
-    #bspc monitor "$monitor" -d '' '' '' '' '' ''
-done
+	# change these values according to your system
+	# you can use `xrandr -q` to get the names of monitors
+INTERNAL_MONITOR="DP-1"
+EXTERNAL_MONITOR="HDMI-1"
+if [[ $(xrandr -q | grep "${EXTERNAL_MONITOR} connected") ]]; then
+    bspc monitor "$EXTERNAL_MONITOR" -d '' '' '' ''
+    bspc monitor "$INTERNAL_MONITOR" -d '' '' '' ''
+    bspc wm -O "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
+else
+    bspc monitor "$INTERNAL_MONITOR" -d '' '' '' '' '' '' '' ''
+fi
 
 ## For two or three monitors configuration see https://github.com/gh0stzk/dotfiles/wiki/Two-or-more-monitors-setup
 

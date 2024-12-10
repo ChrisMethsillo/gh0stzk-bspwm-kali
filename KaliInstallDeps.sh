@@ -115,11 +115,11 @@ install_fonts() {
         rm -rf JetBrainsMono JetBrainsMono.zip
     fi
 
-    descargar_fuente "https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip" "JetBrainsMono.zip"
+    descargar_fuente "https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip" "JetBrainsMono2.zip"
     if [ $? -eq 0 ]; then
-        unzip JetBrainsMono.zip -d JetBrainsMono
-        sudo mv JetBrainsMono/* "$DESTINO"
-        rm -rf JetBrainsMono JetBrainsMono.zip
+        unzip JetBrainsMono2.zip -d JetBrainsMono2
+        sudo mv JetBrainsMono2/* "$DESTINO"
+        rm -rf JetBrainsMono2 JetBrainsMono2.zip
     fi
 
     # Terminus Nerd Font
@@ -207,7 +207,7 @@ apt_packages=(
     alacritty bat brightnessctl bspwm dunst eza feh firefox geany git kitty imagemagick jq
     jgmenu maim mpc mpd mpv neovim ncmpcpp npm pamixer papirus-icon-theme picom playerctl polybar
     redshift rofi rustup sxhkd tmux ueberzug webp-pixbuf-loader xclip xdg-user-dirs xdo xdotool
-    xsettingsd zsh zsh-autosuggestions zsh-syntax-highlighting simple-mtpfs i3lock-color
+    xsettingsd zsh zsh-autosuggestions zsh-syntax-highlighting simple-mtpfs i3lock-color pulseaudio-utils
 )
 
 github_packages=(
@@ -218,17 +218,6 @@ github_packages=(
 # ==============================
 # INSTALACIÓN
 # ==============================
-
-echo -e "${BLD}${CBL}===== Instalando paquetes desde APT =====${CNC}"
-
-total_packages=${#apt_packages[@]}
-for i in "${!apt_packages[@]}"; do
-    install_from_apt "${apt_packages[$i]}"
-    progress_bar "$total_packages" "$((i + 1))"
-done
-echo -e "\n${BLD}${CGR}===== Instalación de paquetes APT completada =====${CNC}"
-
-echo -e "\n${BLD}${CBL}===== Instalando paquetes desde GitHub =====${CNC}"
 
 total_repos=${#github_packages[@]}
 install_all_from_git_and_external() {
@@ -278,34 +267,6 @@ install_all_from_git_and_external() {
     cd - > /dev/null
     rm -rf "$xwinwrap_dir"
 
-    # Instalar Eww
-    echo "Instalando Eww y sus dependencias..."
-    sudo apt-get install -y libqt5glib-2.0-0 libspice-client-glib-2.0-8 libspice-client-glib-2.0-dev libgdk-pixbuf-2.0-dev \
-        libgdk-pixbuf2.0-dev librust-atk-dev librust-atk-sys-dev libcairo-gobject2 libcairo-gobject-perl librust-cairo-rs-dev librust-cairo-sys-rs-dev \
-        librust-pangocairo-dev librust-pangocairo-sys-dev librust-gdk-pixbuf-dev librust-gdk-pixbuf-sys-dev librust-gdk-sys-dev
-
-    local eww_repo="https://github.com/elkowar/eww.git"
-    local eww_dir="/tmp/eww"
-
-    echo "Clonando el repositorio de Eww..."
-    git clone "$eww_repo" "$eww_dir" > /dev/null 2>&1
-    cd "$eww_dir"
-
-    echo "Compilando Eww..."
-    cargo build --release --no-default-features --features x11 > /dev/null 2>&1
-
-    if [ $? -eq 0 ]; then
-        echo "Eww compilado correctamente. Instalando binario..."
-        sudo chmod +x target/release/eww
-        sudo cp target/release/eww /usr/local/bin/
-        echo "Eww instalado correctamente en /usr/local/bin/eww."
-    else
-        echo "Error al compilar Eww."
-    fi
-
-    cd - > /dev/null
-    rm -rf "$eww_dir"
-
     TEMP_DIR=$(mktemp -d)
 
     echo "Instalando zsh-substring-search en $TEMP_DIR"
@@ -323,11 +284,74 @@ install_all_from_git_and_external() {
     rm -rf "$TEMP_DIR"
 }
 
+install_eww(){
+    echo "Instalando dependencias necesarias para Eww..."
+    sudo apt-get update
+    sudo apt-get install -y \
+        libgtk-3-dev \
+        libpango1.0-dev \
+        libgdk-pixbuf-xlib-2.0-dev \
+        libdbusmenu-gtk3-dev \
+        libcairo2-dev \
+        libglib2.0-dev \
+        gcc \
+        libc6-dev
+
+    if [ $? -ne 0 ]; then
+        echo "Error al instalar las dependencias. Revisa tu conexión a Internet o los paquetes."
+        exit 1
+    fi
+
+    EW_DIR="/tmp/eww"
+    EW_REPO="https://github.com/elkowar/eww.git"
+
+    echo "Clonando el repositorio de Eww..."
+    git clone "$EW_REPO" "$EW_DIR" > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error al clonar el repositorio. Verifica tu conexión a Internet."
+        exit 1
+    fi
+
+    echo "Compilando Eww..."
+    cd "$EW_DIR"
+    cargo build --release --no-default-features --features x11 > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error durante la compilación de Eww."
+        rm -rf "$EW_DIR"
+        exit 1
+    fi
+
+    echo "Instalando el binario de Eww..."
+    sudo chmod +x target/release/eww
+    sudo cp target/release/eww /usr/local/bin/
+    if [ $? -ne 0 ]; then
+        echo "Error al instalar el binario de Eww."
+        rm -rf "$EW_DIR"
+        exit 1
+    fi
+
+    echo "Limpiando archivos temporales..."
+    rm -rf "$EW_DIR"
+
+    echo "Eww instalado correctamente en /usr/local/bin/eww."
+
+}
+echo -e "${BLD}${CBL}===== Instalando paquetes desde APT =====${CNC}"
+
+total_packages=${#apt_packages[@]}
+for i in "${!apt_packages[@]}"; do
+    install_from_apt "${apt_packages[$i]}"
+    progress_bar "$total_packages" "$((i + 1))"
+done
+echo -e "\n${BLD}${CGR}===== Instalación de paquetes APT completada =====${CNC}"
+
+echo -e "\n${BLD}${CBL}===== Instalando paquetes desde GitHub =====${CNC}"
 
 install_all_from_git_and_external
 echo -e "\n${BLD}${CGR}===== Instalación de paquetes GitHub completada =====${CNC}"
 
 install_fonts
 install_custom_packages
+install_eww
 
 echo -e "\n${BLD}${CGR}===== Instalación completada =====${CNC}"
