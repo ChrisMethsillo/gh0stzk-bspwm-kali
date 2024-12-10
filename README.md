@@ -17,7 +17,19 @@ https://github.com/user-attachments/assets/3eaae1e2-04dc-4a9b-8c91-139f85f5fb9e
 
 <br>
 
-## 👻 Welcome
+## 👻 Welcome (Message from the fork maintainer)
+
+Welcome to this fork of the original dotfiles by **gh0stzk**. I’m chrisM (or YejiF), and I’ve created a port of these themes, originally designed for Arch Linux, adapting them for use in **Kali Linux**.
+
+The main goal of this project is to preserve all the functionalities and features implemented by gh0stzk, such as the lightweight, efficient, and functional **bspwm** environment, while delivering an equally smooth experience on Kali Linux.
+
+I recommend reading the original README from gh0stzk before proceeding to install this fork. Currently, this fork is in a beta phase because the scripts to install the dependencies for these dotfiles sometimes fail. (At the moment, I have to comment out some functions in the script and execute them one by one to work.)
+
+You can find the instructions for installing these dotfiles on Kali Linux in the [Installation](#-installation) section. Read it carefully before install it.
+To finish, if you want to collaborate with this fork, feel free to send pull requests with new features, bug fixes, or any improvements. You’re also welcome to report issues if needed. 
+I might not always be able to respond to pull requests or issues right away, but I’ll do my best to stay on top of things and keep this project maintained as regularly as I can. Thanks for your understanding and support!
+
+## 👻 Welcome (Message from the owner and the goat gh0stzk)
 
 Welcome to my dotfiles. I’m gh0stzk from Mexico.
 
@@ -328,21 +340,31 @@ And more.. You need to look sxhkdrc file for more, or press Alt + F1 for a cheat
 ### 💾 Installation:
 
 > [!NOTE]
-> The installer only works for **ARCH** Linux, and based distros.
+> The installer only works for **Kali** Linux, and based distros (but probably you have to install some dependencies manually, like i3lock).
 
-- **Open a terminal in HOME and download the installer**
+> [!WARNING]
+> The script to install dependencies is currently unstable but functional. If any part of the installation fails, it is recommended to install the dependencies manually by executing the functions in the script one by one. 
+> 
+> To do this, you can comment out specific functions like `install_fonts`, `install_custom_packages`, and `install_eww`, then execute each function individually to ensure proper installation.
+
+
+The way to install the dotfiles are downloading 2 scripts, one is to install the dependencies (``KaliInstallDeps.sh``) and the another one is to install the dotfiles (``KaliInstallDots.sh``)
+- **Open a terminal in HOME and download the installers**
 ```sh
-curl https://raw.githubusercontent.com/gh0stzk/dotfiles/master/RiceInstaller -o $HOME/RiceInstaller
-
-# Maybe you want a short url??
-
-curl -L https://is.gd/gh0stzk_dotfiles -o $HOME/RiceInstaller
+curl https://raw.githubusercontent.com/ChrisMethsillo/gh0stzk-bspwm-kali/refs/heads/master/KaliInstallDeps.sh -o $HOME/KaliInstallDeps.sh
+curl https://raw.githubusercontent.com/ChrisMethsillo/gh0stzk-bspwm-kali/refs/heads/master/KaliInstallDots.sh -o $HOME/KaliInstallDots.sh
 ```
 - **Now give it execute permissions**
 ```sh
-chmod +x RiceInstaller
+chmod +x KaliInstallDeps.sh
+chmod +x KaliInstallDots.sh
 ```
-- **Finally run the installer**
+- **Update the repository before execute the scripts**
 ```sh
-./RiceInstaller
+sudo apt-get update
+```
+- **Finally, you have to run the dependencies script before the dotfiles scripts**
+```sh
+./KaliInstallDeps.sh
+./KaliInstallDots.sh
 ```
